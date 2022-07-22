@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  mongodb:
+    image: "mongo"
+    volumes:
+      - mongodb:/data/db:rw
+    env_file:
+      - ./env/mongodb.env
+  backend:
+    build: ./goals-back
+    ports:
+      - "3003:3003"
+    volumes:
+      #명명된 볼륨
+      - log:/app/log
+      #도커 컴포즈에서 바인드마운트는 상대경로 사용
+      - ./goals-back:/app
+      #익명볼륨
+      - /app/node_modules
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./goals-front
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./goals-front:/app
+      - /app/.next
+      - /app/node_modules
+    #-i
+    stdin_open: true
+    #-t
+    tty: true
+    depends_on:
+      - backend
+volumes:
+  mongodb:
+  log:
